@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCR Auto Fill Options</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: linear-gradient(160deg, #f5f1e8, #e7eef8);
+        color: #1d2a38;
+      }
+
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px 20px 48px;
+      }
+
+      h1 {
+        margin-bottom: 8px;
+      }
+
+      p {
+        line-height: 1.5;
+      }
+
+      form {
+        display: grid;
+        gap: 14px;
+        margin-top: 24px;
+        padding: 20px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 14px 36px rgba(29, 42, 56, 0.12);
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      input[type="text"],
+      input[type="number"] {
+        padding: 10px 12px;
+        border: 1px solid #b6c2d0;
+        border-radius: 10px;
+        font: inherit;
+      }
+
+      .inline-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      }
+
+      button {
+        width: fit-content;
+        padding: 10px 16px;
+        border: 0;
+        border-radius: 999px;
+        background: #1f6aa5;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      #status {
+        min-height: 20px;
+        font-weight: 600;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index.html-MSPH9Hlu.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  </head>
+  <body>
+    <main>
+      <h1>OCR Auto Fill</h1>
+      <p>設定單一全域規則。Extension 會在所有網站注入；`Host Pattern` 留白代表所有網站，而 `Image Selector`、`Input Selector` 留白時會改用自動偵測。</p>
+      <form id="ruleForm">
+        <label>
+          Host Pattern
+          <input id="hostPattern" name="hostPattern" type="text" placeholder="留白代表所有網站" />
+        </label>
+        <label>
+          Image Selector
+          <input id="imageSelector" name="imageSelector" type="text" placeholder="可留白，自動偵測" />
+        </label>
+        <label>
+          Input Selector
+          <input id="inputSelector" name="inputSelector" type="text" placeholder="可留白，自動偵測" />
+        </label>
+        <label>
+          Refresh Selector
+          <input id="refreshSelector" name="refreshSelector" type="text" placeholder="#refreshButton" />
+        </label>
+        <div class="grid">
+          <label>
+            Min Length
+            <input id="minLength" name="minLength" type="number" min="1" value="1" required />
+          </label>
+          <label>
+            Max Length
+            <input id="maxLength" name="maxLength" type="number" min="1" value="12" required />
+          </label>
+          <label>
+            Max Retries
+            <input id="maxRetries" name="maxRetries" type="number" min="0" value="1" required />
+          </label>
+        </div>
+        <label class="inline-toggle">
+          <input id="autoFillEnabled" name="autoFillEnabled" type="checkbox" checked />
+          Enable Auto Fill
+        </label>
+        <label class="inline-toggle">
+          <input id="autoRetryEnabled" name="autoRetryEnabled" type="checkbox" checked />
+          Enable Auto Retry
+        </label>
+        <button type="submit">Save Rule</button>
+        <p id="status"></p>
+      </form>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCR Auto Fill Manual Test</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(160deg, #f6f0e4, #dfeaf7);
+        color: #203244;
+      }
+
+      main {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .card {
+        padding: 24px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 18px 40px rgba(32, 50, 68, 0.12);
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 16px;
+      }
+
+      input {
+        padding: 10px 12px;
+        border: 1px solid #9eb0c1;
+        border-radius: 10px;
+        font: inherit;
+      }
+
+      button {
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 999px;
+        background: #a64b2a;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      img {
+        display: block;
+        margin-top: 18px;
+        width: 180px;
+        height: 64px;
+        border: 1px solid #d2d9e0;
+        border-radius: 12px;
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="card">
+        <h1>OCR Auto Fill Manual Test</h1>
+        <p>設定建議：`localhost`、`#codeImage`、`#codeInput`、`#refreshButton`。這個頁面不會自動送出表單。</p>
+        <p id="debugStatus">Status: waiting</p>
+        <img id="codeImage" alt="sample code" />
+        <div class="row">
+          <input id="codeInput" placeholder="OCR result" />
+          <button id="refreshButton" type="button">Refresh Code</button>
+        </div>
+      </div>
+    </main>
+    <script>
+      const samples = ["A203", "B204", "C305"];
+      let index = 0;
+
+      function renderCode(text) {
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="180" height="64" viewBox="0 0 180 64">
+            <rect width="180" height="64" rx="12" fill="#fffaf0"/>
+            <path d="M8 16h164M10 48h160" stroke="#d1c4a8" stroke-width="2"/>
+            <text x="90" y="41" font-size="28" text-anchor="middle" font-family="Consolas, monospace" fill="#1d2a38">${text}</text>
+          </svg>`;
+        const encoded = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+        document.getElementById("codeImage").src = encoded;
+      }
+
+      document.getElementById("refreshButton").addEventListener("click", () => {
+        index = (index + 1) % samples.length;
+        renderCode(samples[index]);
+      });
+
+      document.addEventListener("ocr-autofill-debug", (event) => {
+        const statusElement = document.getElementById("debugStatus");
+        const detail = event.detail?.detail ? ` (${event.detail.detail})` : "";
+        statusElement.textContent = `Status: ${event.detail?.status ?? "unknown"}${detail}`;
+      });
+
+      renderCode(samples[index]);
+    </script>
+  </body>
+</html>

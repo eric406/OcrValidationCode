@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "OCR Auto Fill",
+  "version": "0.1.0",
+  "permissions": [
+    "storage",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/index.ts-loader-Bq-LITUv.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "src/options/index.html",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "tesseract/worker.min.js",
+        "tesseract-core/*",
+        "tessdata/*",
+        "assets/siteRules-C06OUWDr.js",
+        "assets/index.ts-IncqY0J5.js"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "tesseract/worker.min.js",
+        "tesseract-core/*",
+        "tessdata/*"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}
