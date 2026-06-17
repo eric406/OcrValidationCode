@@ -289,4 +289,72 @@ describe("content autofill flow", () => {
     expect(sendMessage).toHaveBeenCalledTimes(1);
     expect((document.querySelector("#codeInput") as HTMLInputElement).value).toBe("E507");
   });
+
+  it("waits for the configured image selector to appear before running OCR", async () => {
+    document.body.innerHTML = `
+      <input id="codeInput" />
+      <button id="refresh" type="button">refresh</button>
+    `;
+
+    const sendMessage = vi.fn().mockResolvedValue({
+      ok: true,
+      recognizedText: "F608"
+    });
+    const releaseRuleRef: { current: null | (() => void) } = { current: null };
+    const ruleLoaded = new Promise<void>((resolve) => {
+      releaseRuleRef.current = resolve;
+    });
+
+    vi.stubGlobal("chrome", {
+      runtime: { sendMessage },
+      storage: {
+        local: {
+          get: vi.fn().mockImplementation(async () => {
+            await ruleLoaded;
+
+            return {
+              rule: {
+                hostPattern: "",
+                imageSelector: "#codeImage",
+                inputSelector: "#codeInput",
+                refreshSelector: "#refresh",
+                characterPolicy: "alphanumeric",
+                autoFillEnabled: true,
+                autoRetryEnabled: false,
+                maxRetries: 0
+              }
+            };
+          })
+        }
+      }
+    });
+
+    const { runAutoFill } = await import("../src/content/index");
+    const pending = runAutoFill("https://example.com/demo");
+
+    expect(sendMessage).not.toHaveBeenCalled();
+    if (!releaseRuleRef.current) {
+      throw new Error("releaseRule not initialized");
+    }
+
+    releaseRuleRef.current();
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 0);
+    });
+
+    const delayedImage = document.createElement("img");
+    delayedImage.id = "codeImage";
+    delayedImage.src = "sample-code.png";
+
+    Object.defineProperty(delayedImage, "complete", {
+      configurable: true,
+      get: () => true
+    });
+
+    document.body.prepend(delayedImage);
+    await pending;
+
+    expect(sendMessage).toHaveBeenCalledTimes(1);
+    expect((document.querySelector("#codeInput") as HTMLInputElement).value).toBe("F608");
+  });
 });

@@ -14,6 +14,8 @@ interface DebugDetail {
   status: string;
 }
 
+const TARGET_WAIT_TIMEOUT_MS = 3000;
+
 async function loadRule(): Promise<SiteRule> {
   const result = await chrome.storage.local.get("rule");
   return result.rule ?? createDefaultRule();
@@ -63,6 +65,42 @@ async function waitForImageReady(imageElement: HTMLImageElement): Promise<void> 
 
 function hasSelector(selector: string | undefined): selector is string {
   return typeof selector === "string" && selector.trim() !== "";
+}
+
+async function waitForElement<T extends Element>(
+  selector: string,
+  isMatch: (element: Element) => element is T,
+  timeoutMs = TARGET_WAIT_TIMEOUT_MS,
+): Promise<T | null> {
+  const existingElement = document.querySelector(selector);
+
+  if (existingElement && isMatch(existingElement)) {
+    return existingElement;
+  }
+
+  return new Promise<T | null>((resolve) => {
+    const timeoutId = window.setTimeout(() => {
+      observer.disconnect();
+      resolve(null);
+    }, timeoutMs);
+
+    const observer = new MutationObserver(() => {
+      const matchedElement = document.querySelector(selector);
+
+      if (!matchedElement || !isMatch(matchedElement)) {
+        return;
+      }
+
+      window.clearTimeout(timeoutId);
+      observer.disconnect();
+      resolve(matchedElement);
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  });
 }
 
 function isCandidateInput(element: Element): element is HTMLInputElement {
@@ -236,7 +274,13 @@ export async function runAutoFill(currentUrl = window.location.href): Promise<vo
   }
 
   emitDebugStatus("rule_loaded");
-  const { imageElement, inputElement } = resolveTargets(rule);
+  let imageElement =
+    hasSelector(rule.imageSelector)
+      ? await waitForElement(rule.imageSelector, (element): element is HTMLImageElement => element instanceof HTMLImageElement)
+      : null;
+  const { imageElement: resolvedImageElement, inputElement } = resolveTargets(rule);
+
+  imageElement ??= resolvedImageElement;
 
   if (!(imageElement instanceof HTMLImageElement)) {
     emitDebugStatus("image_not_found");
