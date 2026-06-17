@@ -315,7 +315,7 @@ export async function runAutoFill(currentUrl = window.location.href): Promise<vo
 
     if (!refreshElement) {
       emitDebugStatus("refresh_not_found");
-      throw new Error("refresh_not_found");
+      return;
     }
 
     emitDebugStatus("retrying", `attempt:${retries + 1}`);

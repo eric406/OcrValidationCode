@@ -158,6 +158,45 @@ describe("content autofill flow", () => {
     expect((document.querySelector("#codeInput") as HTMLInputElement).value).toBe("B204");
   });
 
+  it("does not throw when refresh selector is missing after an invalid OCR result", async () => {
+    document.querySelector("#refresh")?.remove();
+    setImageLoaded("#codeImage");
+
+    const sendMessage = vi.fn().mockResolvedValue({
+      ok: true,
+      recognizedText: "@"
+    });
+
+    vi.stubGlobal("chrome", {
+      runtime: { sendMessage },
+      storage: {
+        local: {
+          get: vi.fn().mockResolvedValue({
+            rule: {
+              hostPattern: "example.com",
+              imageSelector: "#codeImage",
+              inputSelector: "#codeInput",
+              refreshSelector: "#refresh",
+              characterPolicy: "alphanumeric",
+              minLength: 2,
+              maxLength: 6,
+              autoFillEnabled: true,
+              autoRetryEnabled: true,
+              maxRetries: 1
+            }
+          })
+        }
+      }
+    });
+
+    const { runAutoFill } = await import("../src/content/index");
+
+    await expect(runAutoFill("https://example.com/demo")).resolves.toBeUndefined();
+    expect(sendMessage).toHaveBeenCalledTimes(1);
+    expect((document.querySelector("#codeInput") as HTMLInputElement).value).toBe("");
+    expect(document.documentElement.dataset.ocrAutofillStatus).toBe("refresh_not_found");
+  });
+
   it("auto-detects the image and input when selectors are blank", async () => {
     setImageLoaded("#codeImage");
     const sendMessage = vi.fn().mockResolvedValue({
